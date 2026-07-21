@@ -94,7 +94,7 @@ minute.
   created_at)`
 
 ### AI capability spec
-- Provider: Google Gemini (`gemini-2.0-flash`) via `@google/generative-ai`.
+- Provider: Google Gemini (`gemini-2.5-flash`) via `@google/generative-ai`.
 - System prompt fixes output contract: exactly 3 variants labeled A/B/C, each
   with headline ≤ 8 words, body ≤ 30 words, CTA ≤ 5 words, angle-diverse,
   strict JSON only (no markdown fences).

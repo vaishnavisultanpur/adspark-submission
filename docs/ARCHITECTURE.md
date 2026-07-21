@@ -72,7 +72,7 @@ the simplest architecture that satisfies the requirement.
 | Auth | NextAuth (Credentials provider, JWT strategy) | No external DB adapter needed; stateless sessions scale horizontally. |
 | Database | Neon Postgres (serverless) via Prisma ORM | Durable, connection-pooled storage that works correctly on Vercel's read-only serverless filesystem — SQLite was used in an earlier iteration and swapped out for this reason (see §5). |
 | Validation | Zod | Shared-shape server-side validation on every mutating route. |
-| AI | Google Gemini (`gemini-2.0-flash`) via `@google/generative-ai` | LLM text generation with a strict output contract (see Master Prompt). |
+| AI | Google Gemini (`gemini-2.5-flash`) via `@google/generative-ai` | LLM text generation with a strict output contract (see Master Prompt). |
 | Icons | lucide-react | Lightweight, consistent icon set. |
 
 ## 4. Data Model
@@ -135,12 +135,16 @@ level — a user can never fetch another user's campaign, even by guessing an ID
 | Responsiveness | Landing, auth, dashboard, campaign pages | Built mobile-first with Tailwind breakpoints (`md:`); sidebar collapses to top bar on mobile. |
 | Route protection | Unauthenticated request to `/dashboard` | `middleware.ts` redirects to `/login`. |
 
-**Not yet run (documented as next step given the 2-day window):** full
-cross-browser manual pass and a live Gemini API smoke test with a real key
-(the sandboxed dev environment used for this submission does not have network
-access to `generativelanguage.googleapis.com` with a funded key configured) — the
-integration code path itself is verified by contract (SDK call shape matches
-Google's documented Gemini API) and by the endpoint's error-handling test above.
+**Live production verification:** the Gemini integration was tested end-to-end
+against the deployed Vercel app (not just locally/mocked) — logged in on the
+live URL, created a campaign, clicked **Generate ad copy**, and confirmed via
+browser dev tools that `POST /api/campaigns/:id/generate` returns `200` with
+3 well-formed variants (headline/body/CTA), which persist correctly to Neon
+Postgres and render on the campaign detail page.
+
+**Not yet run (documented as next step given the 2-day window):** a full
+manual cross-browser pass (tested primarily in Chrome; Firefox/Safari not yet
+spot-checked).
 
 ## 7. Deployment
 
