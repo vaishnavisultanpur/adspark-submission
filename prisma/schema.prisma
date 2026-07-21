@@ -1,0 +1,50 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model User {
+  id        String     @id @default(uuid())
+  name      String
+  email     String     @unique
+  password  String
+  brandTone String     @default("") @map("brand_tone")
+  createdAt DateTime   @default(now()) @map("created_at")
+  campaigns Campaign[]
+
+  @@map("users")
+}
+
+model Campaign {
+  id           String    @id @default(uuid())
+  userId       String    @map("user_id")
+  user         User      @relation(fields: [userId], references: [id])
+  title        String
+  productBrief String    @map("product_brief")
+  productLink  String?   @map("product_link")
+  tone         String
+  audience     String?
+  status       String    @default("draft")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  variants     Variant[]
+
+  @@map("campaigns")
+}
+
+model Variant {
+  id           String   @id @default(uuid())
+  campaignId   String   @map("campaign_id")
+  campaign     Campaign @relation(fields: [campaignId], references: [id])
+  headline     String
+  body         String
+  cta          String
+  variantLabel String   @map("variant_label")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  @@map("variants")
+}
