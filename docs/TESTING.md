@@ -1,82 +1,59 @@
-# Testing Report
+# AdSpark — Testing & QA
 
-## Functional Testing
+## 1. Functional Testing
 
-✔ User Registration
+| Flow | Steps | Expected result |
+|---|---|---|
+| Register | New email/password | Account created, redirected to dashboard |
+| Register (duplicate email) | Existing email | 409 with clear error, no duplicate row |
+| Login | Correct credentials | Session created, redirect to dashboard |
+| Login (wrong password) | Incorrect password | Generic error, no user enumeration |
+| Create campaign | Fill product/audience/tone, submit | Campaign saved, appears in list |
+| Generate ad copy | Click Generate on a campaign | 3 variants (headline/body/CTA) returned and displayed |
+| Regenerate | Click Generate again | New variant set added to history, old ones retained |
+| Empty/invalid brief | Submit with missing required fields | Client + server validation blocks submit with clear message |
+| Sign out | Click sign out | Session cleared, protected routes redirect to login |
 
-✔ User Login
+## 2. API Testing
 
-✔ Authentication
+Each mutating endpoint checked for:
+- Missing/invalid body → 400 with field-level validation errors (zod)
+- Missing session → 401
+- Not-found resource (e.g. campaign belonging to another user) → 403/404
+- Valid request → correct status + response shape
 
-✔ Dashboard
+## 3. AI Feature Testing
 
-✔ Campaign Creation
+- **Structured output validation**: Gemini's response is parsed against an
+  expected shape (headline/body/CTA per variant) before being saved;
+  malformed output is retried rather than silently saved broken
+- **Tone conditioning check**: manually verified that switching brand tone
+  (e.g. "playful" vs "professional") produces meaningfully different copy,
+  not just superficial word swaps
+- **Empty/short brief handling**: verified the model still returns usable
+  output rather than erroring on a minimal input, and that obviously
+  insufficient briefs are caught by client-side validation before reaching
+  the API
 
-✔ Campaign Listing
+## 4. UI/UX Validation
 
-✔ Campaign Details
+- Responsive check at mobile (375px), tablet (768px), desktop (1280px)
+- Keyboard focus visible on all interactive elements
+- Loading and empty states present for: no campaigns yet, generation in
+  progress, generation failure
 
-✔ AI Advertisement Generation
+## 5. Security Testing
 
-✔ Regenerate Advertisement
+- Confirmed role/session checks happen server-side in API routes, not just
+  hidden in the UI
+- Confirmed campaign queries are scoped to the logged-in user
+- Confirmed `passwordHash` is never included in any API response
 
-✔ Logout
+## 6. Known Gaps / Not Yet Automated
 
----
-
-## Validation Testing
-
-- Required field validation
-- Input validation using Zod
-- API request validation
-
----
-
-## Security Testing
-
-- Password hashing
-- Session authentication
-- Protected routes
-- Authorization checks
-
----
-
-## UI Testing
-
-- Desktop
-- Tablet
-- Mobile Responsive
-
----
-
-## Browser Testing
-
-- Google Chrome
-- Microsoft Edge
-
----
-
-## Database Testing
-
-- Prisma ORM
-- PostgreSQL
-- CRUD Operations
-
----
-
-## Deployment Testing
-
-Deployment Platform:
-Vercel
-
-Verified:
-
-✔ Authentication
-
-✔ Database Connectivity
-
-✔ AI Generation
-
-✔ Campaign Persistence
-
-✔ Responsive Layout
+- No automated test suite (Jest/Playwright) — testing above was manual,
+  given the assessment timeline
+- Cross-browser testing done primarily on Chromium; not exhaustively
+  verified on Safari/Firefox edge cases
+- No load/performance testing performed; flagged as a pre-production
+  requirement since the Gemini call is on the critical path per generation
